@@ -1,7 +1,7 @@
 name: Docker
 
 on:
-  # push:
+  push:
   #   branches:
   #     - master
   #   tags:
@@ -20,7 +20,7 @@ jobs:
       - name: Calculate Docker image tags
         id: tags
         env:
-          DOCKER_IMAGES: "ghcr.io/dexidp/dex dexidp/dex"
+          DOCKER_IMAGES: "ghcr.io/datahow/dex"
         run: |
           case $GITHUB_REF in
             refs/tags/*)  VERSION=${GITHUB_REF#refs/tags/};;
@@ -64,18 +64,18 @@ jobs:
           password: ${{ github.token }}
         if: github.event_name == 'push'
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-        if: github.event_name == 'push'
+      # - name: Login to Docker Hub
+      #   uses: docker/login-action@v2
+      #   with:
+      #     username: ${{ secrets.DOCKER_USERNAME }}
+      #     password: ${{ secrets.DOCKER_PASSWORD }}
+      #   if: github.event_name == 'push'
 
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
           context: .
-          platforms: linux/amd64,linux/arm/v7,linux/arm64,linux/ppc64le
+          platforms: linux/amd64 #,linux/arm/v7,linux/arm64,linux/ppc64le
           # cache-from: type=gha
           # cache-to: type=gha,mode=max
           push: ${{ github.event_name == 'push' }}
@@ -98,7 +98,7 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@0.7.1
         with:
-          image-ref: "ghcr.io/dexidp/dex:${{ steps.tags.outputs.version }}"
+          image-ref: "ghcr.io/datahow/dex:${{ steps.tags.outputs.version }}"
           format: "template"
           template: "@/contrib/sarif.tpl"
           output: "trivy-results.sarif"
